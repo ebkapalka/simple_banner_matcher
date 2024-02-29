@@ -68,19 +68,28 @@ def filter_again(driver: webdriver, timeout=300):
             break
 
 
-def get_prospect_ids(driver: webdriver, timeout=300) -> list[str]:
+def get_prospect_ids(driver: webdriver, timeout=10) -> list[str]:
     """
     Fetch the rows from the verifier page
     :param driver: webdriver
     :param timeout: time to wait for the page to load
     :return: list of WebElements
     """
+    def await_multiple_elems(driver: webdriver):
+        """
+        Used to check for multiple matching elements
+        :param driver: webdriver
+        :return:
+        """
+        elems = driver.find_elements(By.XPATH, '//div[@onmousedown="Frames.'
+                                               'DataGrid.selection(this);"]')
+        if len(elems) < 2:
+            return False
+        return elems
+
     prospect_ids = []
     wait_for_verifier_load(driver)
-    print("Fetching Prospect IDs from verifier page...")
-    time.sleep(10)
-    rows = driver.find_elements(By.XPATH, '//div[@onmousedown="Frames.DataGrid.selection(this);"]')
-    print(len(rows))
+    rows = WebDriverWait(driver, timeout).until(await_multiple_elems)
     for row in rows:
         try:
             child_div = row.find_element(By.XPATH, ".//div[1]/div[1]")
