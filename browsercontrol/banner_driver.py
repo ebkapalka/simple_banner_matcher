@@ -1,6 +1,9 @@
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium import webdriver
+import time
+
+from browsercontrol.sriprel_navigator import filter_again, get_prospect_ids
 
 
 class BannerDriver:
@@ -8,9 +11,11 @@ class BannerDriver:
     This class is used to control the Banner web page.
     """
     def __init__(self):
+        self.processed_ids = set()
+        self.batch_ids = set()
         self.driver = webdriver.Chrome()
         self.await_login()
-        self.config_verifier()
+        self.main_loop()
 
     def await_login(self):
         """
@@ -28,4 +33,14 @@ class BannerDriver:
         The main loop of the program
         :return: None
         """
-        pass
+        print("Main Loop")
+        filter_again(self.driver)
+        time.sleep(100)
+        # self.batch_ids = get_prospect_ids(self.driver)
+        # print(self.batch_ids)
+
+        # for prospect_id in self.batch_ids:
+        #     ...
+        # if self.batch_ids.issubset(self.processed_ids):
+        #     print("No new prospects found")
+        #     return
