@@ -39,6 +39,8 @@ def filter_again(driver: webdriver, timeout=300):
     :param timeout: time to wait for the page to load
     :return: None
     """
+    driver.get("https://prodbanner.montana.edu/BannerAdmin?form=SRIPREL&vpdi_code="
+               "BZ&appnav_vpdi_code=BZ&ban_args=&ban_mode=xe")
     wait_for_verifier_load(driver)
     selector_filter_elements = (By.CLASS_NAME, 'middleDivRow')
     selector_text_input = (By.XPATH, ".//input")
@@ -56,11 +58,12 @@ def filter_again(driver: webdriver, timeout=300):
             continue
 
         if "Match Status" in elem_label_text:
-            input_box = elem.find_elements(
-                *selector_text_input)[1]
-            input_box.click()
             cmd = "arguments[0].value = 'Suspense';"
-            driver.execute_script(cmd, input_box)
+            input_box = elem.find_elements(*selector_text_input)[1]
+            while input_box.get_attribute("value") != "Suspense":
+                input_box.click()
+                driver.execute_script(cmd, input_box)
+                time.sleep(1)
             btn.click()
             break
 
@@ -84,8 +87,8 @@ def get_prospect_ids(driver: webdriver, timeout=300) -> list[str]:
         except:
             child_div = row.find_element(By.XPATH, ".//div[1]/input[1]")
         prospect_id = child_div.text
-        print(prospect_id)
         prospect_ids.append(prospect_id)
+    return prospect_ids
 
 
 def select_row_by_prospect_id(driver: webdriver, prospect_id: str, timeout=300) -> WebElement:
