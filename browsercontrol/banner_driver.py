@@ -1,9 +1,12 @@
 from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium import webdriver
 import time
 
-from browsercontrol.sriprel_navigator import filter_again, get_prospect_ids
+from browsercontrol.sriprel_navigator import (filter_again, get_prospect_ids,
+                                              select_by_prospect_id, select_and_nav)
+from browsercontrol.goamtch_navigator import get_prospect_attributes
 
 
 class BannerDriver:
@@ -12,6 +15,7 @@ class BannerDriver:
     """
     def __init__(self):
         self.driver = webdriver.Chrome()
+        self.actions = ActionChains(self.driver)
         self.await_login()
         self.main_loop()
 
@@ -20,6 +24,7 @@ class BannerDriver:
         Waits for the user to log into Banner
         :return: None
         """
+        print("Please log into Banner")
         self.driver.get("https://prodbanner.montana.edu/applicationNavigator/seamless")
         WebDriverWait(self.driver, 300).until(EC.title_is("Application Navigator"))
         print("Banner Login Successful")
@@ -36,5 +41,7 @@ class BannerDriver:
                 print("No suspended records found")
                 return
             for prospect_id in set(batch_ids):
-                print(prospect_id)
-                # TODO: navigate to it and do stuff
+                elem = select_by_prospect_id(self.driver, prospect_id)
+                select_and_nav(self.driver, self.actions, elem)
+                print(get_prospect_attributes(self.driver))
+                time.sleep(1000)
