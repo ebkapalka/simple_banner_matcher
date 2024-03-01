@@ -2,6 +2,7 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.common.by import By
 from selenium import webdriver
+from pprint import pprint
 
 
 def get_prospect_attributes(driver: webdriver, timeout=300) -> dict[str, str]:
@@ -30,5 +31,30 @@ def get_prospect_attributes(driver: webdriver, timeout=300) -> dict[str, str]:
     }
 
 
-def get_potential_match_attributes(driver: webdriver) -> list[dict]:
-    ...
+def get_potential_match_attributes(driver: webdriver) -> dict:
+    """
+    Get the attributes of the potential matches from the GOAMTCH page
+    :param driver: webdriver
+    :return: dictionary of attributes
+    """
+    match_container = driver.find_element(By.ID, "grdGovcmid")
+    WebDriverWait(driver, 10).until(
+        EC.presence_of_element_located((By.XPATH, ".//div[contains(@class, 'active') and "
+                                                  "@onmousedown='Frames.DataGrid.selection(this);']")))
+    match_rows = match_container.find_elements(By.XPATH, './/div[@onmousedown="Frames'
+                                                         '.DataGrid.selection(this);"]')
+    all_data = {}
+    for row in match_rows:
+        cols = row.find_elements(By.XPATH, './div')
+        title_attribute = cols[5].find_element(
+            By.XPATH, './*').get_attribute("title")
+        all_data[title_attribute] = {
+            "name": cols[0].text,
+            "birthday": cols[1].text,
+            "address": cols[2].text,
+            "phone": cols[3].text,
+            "email": cols[4].text,
+            "gender": cols[6].text,
+        }
+        pprint(all_data)
+    return all_data
