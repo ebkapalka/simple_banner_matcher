@@ -6,7 +6,8 @@ import time
 
 from browsercontrol.sriprel_navigator import (filter_again, get_prospect_ids,
                                               select_by_prospect_id, select_and_nav)
-from browsercontrol.goamtch_navigator import get_prospect_attributes
+from browsercontrol.goamtch_navigator import (get_prospect_attributes,
+                                              get_potential_match_attributes)
 
 
 class BannerDriver:
@@ -44,4 +45,5 @@ class BannerDriver:
                 elem = select_by_prospect_id(self.driver, prospect_id)
                 select_and_nav(self.driver, self.actions, elem)
                 print(get_prospect_attributes(self.driver))
+                get_potential_match_attributes(self.driver)
                 time.sleep(1000)
