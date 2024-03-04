@@ -1,5 +1,5 @@
-from selenium.common import StaleElementReferenceException
 from selenium.webdriver.support import expected_conditions as EC
+from selenium.common import StaleElementReferenceException
 from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.common.by import By
 from selenium import webdriver
@@ -96,6 +96,12 @@ def find_matched_element(driver, prospect_id):
 
 
 def select_by_match_id(driver: webdriver, prospect_id: str) -> None:
+    """
+    Select a row by the prospect id
+    :param driver: webdriver
+    :param prospect_id: id to search for
+    :return: None
+    """
     matched_elem = find_matched_element(driver, prospect_id)
     if matched_elem:
         try:
@@ -108,9 +114,9 @@ def select_by_match_id(driver: webdriver, prospect_id: str) -> None:
             if matched_elem:
                 matched_elem.click()
                 wait_for_spinner(driver, 300)
-        button_save = driver.find_element(By.XPATH, '//a[@data-action="SAVE"]')
         wait_for_spinner(driver, 300)
-        button_save.click()
+        button_select = driver.find_element(By.ID, 'selectBtn')
+        button_select.click()
     else:
         print("No match found")
 
@@ -119,6 +125,7 @@ def next_page(driver: webdriver, direction="FWD") -> None:
     """
     Click the next page button
     :param driver: webdriver
+    :param direction: FWD or BACK
     :return: None
     """
     if direction == "FWD":
