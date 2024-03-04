@@ -88,7 +88,6 @@ class BannerDriver:
                 else:
                     print(f"Pg:{page_number} #{index:>02} - Selecting match {match_gid}")
                     self.stats["match"] += 1
-                    # TODO: figure out why this doesn't work
                     select_by_match_id(self.driver, match_gid)
                 handle_popup(self.driver)
             page_number += 1
