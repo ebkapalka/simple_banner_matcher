@@ -2,11 +2,10 @@ from selenium.webdriver import ActionChains, Keys
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.remote.webelement import WebElement
 from selenium.webdriver.support.ui import WebDriverWait
-from selenium.common import NoSuchElementException
+from selenium.common import NoSuchElementException, TimeoutException
 from selenium.webdriver.common.by import By
 from selenium import webdriver
 import time
-import sys
 
 from browsercontrol.goamtch_navigator import wait_for_spinner
 
@@ -75,7 +74,7 @@ def get_prospect_ids(driver: webdriver, timeout=10) -> list[str]:
     def await_multiple_elems(dr: webdriver):
         """
         Used to check for multiple matching elements
-        :param driver: webdriver
+        :param dr: webdriver
         :return:
         """
         elems = dr.find_elements(By.XPATH, '//div[@onmousedown="Frames.'
@@ -86,14 +85,19 @@ def get_prospect_ids(driver: webdriver, timeout=10) -> list[str]:
 
     prospect_ids = []
     wait_for_verifier_load(driver)
-    rows = WebDriverWait(driver, timeout).until(await_multiple_elems)
-    for row in rows:
-        try:
-            child_div = row.find_element(By.XPATH, ".//div[1]/div[1]")
-        except:
-            child_div = row.find_element(By.XPATH, ".//div[1]/input[1]")
-        prospect_id = child_div.text
-        prospect_ids.append(prospect_id)
+    try:
+        rows = WebDriverWait(driver, timeout).until(await_multiple_elems)
+        for row in rows:
+            try:
+                child_div = row.find_element(By.XPATH, ".//div[1]/div[1]")
+            except:
+                child_div = row.find_element(By.XPATH, ".//div[1]/input[1]")
+            prospect_id = child_div.text
+            prospect_ids.append(prospect_id)
+    except TimeoutException:
+        pass
+    except Exception as e:
+        print(f"Error in get_prospect_ids: {e}")
     return prospect_ids
 
 
@@ -122,7 +126,7 @@ def select_and_nav(driver: webdriver, actions: ActionChains, elem: WebElement, t
     def await_menu_related(dr: webdriver):
         """
         Used to check for the menu related element
-        :param driver: webdriver
+        :param dr: webdriver
         :return:
         """
         menu_elem = dr.find_element(By.ID, 'menu-related')
