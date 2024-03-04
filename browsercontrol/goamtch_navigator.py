@@ -1,9 +1,8 @@
+from selenium.common import StaleElementReferenceException
 from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.remote.webelement import WebElement
 from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.common.by import By
 from selenium import webdriver
-from pprint import pprint
 import time
 
 
@@ -41,84 +40,139 @@ def get_potential_match_attributes(driver: webdriver) -> dict:
     :return: dictionary of attributes
     """
     wait_for_spinner(driver, 300)
+
+    # click the match tab if it is not already selected
     match_tab = driver.find_element(By.ID, "tabGoamtchTabCanvas_tab1")
     while match_tab.get_attribute("aria-selected") != "true":
         time.sleep(.1)
-        match_tab.click()
+        WebDriverWait(driver, 10).until(
+            EC.element_to_be_clickable((By.ID, "tabGoamtchTabCanvas_tab1")))
+        try:
+            match_tab.click()
+        except:
+            pass
         wait_for_spinner(driver, 300)
 
-    match_container = driver.find_element(By.ID, "grdGovcmid")
-    WebDriverWait(driver, 10).until(
-        EC.element_to_be_clickable((By.XPATH, ".//div[contains(@class, 'active') and "
-                                                  "@onmousedown='Frames.DataGrid.selection(this);']")))
-    match_rows = match_container.find_elements(By.XPATH, './/div[@onmousedown="Frames'
-                                                         '.DataGrid.selection(this);"]')
+    # find match rows in match container
+
+    # iterate through match rows and add to dictionary
     all_data = {}
-    for row in match_rows:
-        cols = row.find_elements(By.XPATH, './div')
-        gid = cols[5].find_element(
-            By.XPATH, './*').get_attribute("title")
-        all_data[gid] = {
-            "name": cols[0].text,
-            "birthday": cols[1].text,
-            "address": '='.join(cols[2].text.split('=')[1:]),
-            "phone": '='.join(cols[3].text.split('=')[1:]),
-            "email": '='.join(cols[4].text.split('=')[1:]).lower(),
-            "gender": cols[6].text,
-        }
-    button_next = driver.find_elements(By.CLASS_NAME, 'ui-grid-pager-next')[1]
-    if "ui-state-disabled" not in button_next.get_attribute("class"):
-        print("Multiple pages of matches detected...")
-        time.sleep(10)
-        wait_for_spinner(driver, 300)
-        button_next.click()
-        all_data.update(get_potential_match_attributes(driver))
-    return all_data
-
-
-def select_by_match_id(driver: webdriver, prospect_id: str) -> None:
-    """
-    Select a row by the prospect id
-    :param driver: webdriver
-    :param prospect_id: prospect id to search for
-    :return: WebElement if found, None if not found
-    """
-    if not prospect_id:
-        button_new_record = driver.find_element(By.ID, "createBtn")
-        button_new_record.click()
-    else:
+    num_pages = driver.find_elements(By.CLASS_NAME, 'ui-total-pages')[1].text
+    for page in range(int(num_pages)):
         match_container = driver.find_element(By.ID, "grdGovcmid")
         WebDriverWait(driver, 10).until(
-            EC.presence_of_element_located((By.XPATH, ".//div[contains(@class, 'active') and "
-                                                      "@onmousedown='Frames.DataGrid.selection(this);']")))
+            EC.element_to_be_clickable((By.XPATH, ".//div[contains(@class, 'active') and "
+                                                  "@onmousedown='Frames.DataGrid.selection(this);']")))
         match_rows = match_container.find_elements(By.XPATH, './/div[@onmousedown="Frames'
                                                              '.DataGrid.selection(this);"]')
-        matched_elem = None
+        page_data = {}
         for row in match_rows:
             cols = row.find_elements(By.XPATH, './div')
             gid = cols[5].find_element(
                 By.XPATH, './*').get_attribute("title")
-            if gid == prospect_id:
-                matched_elem = row
-                break
-        # TODO: add page navigation logic for multiple pages of matches
+            page_data[gid] = {
+                "name": cols[0].text,
+                "birthday": cols[1].text,
+                "address": '='.join(cols[2].text.split('=')[1:]),
+                "phone": '='.join(cols[3].text.split('=')[1:]),
+                "email": '='.join(cols[4].text.split('=')[1:]).lower(),
+                "gender": cols[6].text,
+            }
+        all_data.update(page_data)
+        next_page(driver, direction="FWD")
 
-        if matched_elem:
+    return all_data
+
+
+def find_matched_element(driver, prospect_id):
+    match_container = driver.find_element(By.ID, "grdGovcmid")
+    match_rows = match_container.find_elements(By.XPATH, './/div[@onmousedown="Frames.DataGrid.selection(this);"]')
+    for row in match_rows:
+        cols = row.find_elements(By.XPATH, './div')
+        gid = cols[5].find_element(By.XPATH, './*').get_attribute("title")
+        if gid == prospect_id:
+            return row
+    return None
+
+
+def select_by_match_id(driver: webdriver, prospect_id: str) -> None:
+    matched_elem = find_matched_element(driver, prospect_id)
+    if matched_elem:
+        try:
             while matched_elem.get_attribute("aria-selected") != "true":
+                matched_elem.click()
                 time.sleep(.1)
+                wait_for_spinner(driver, 300)
+        except StaleElementReferenceException:
+            matched_elem = find_matched_element(driver, prospect_id)  # Refetch the element
+            if matched_elem:
                 matched_elem.click()
                 wait_for_spinner(driver, 300)
-            button_save = driver.find_element(By.XPATH, '//a[@data-action="SAVE"]')
-            wait_for_spinner(driver, 300)
-            button_save.click()
-        else:
-            print("No match found")
+        button_save = driver.find_element(By.XPATH, '//a[@data-action="SAVE"]')
+        wait_for_spinner(driver, 300)
+        button_save.click()
+    else:
+        print("No match found")
 
+
+def next_page(driver: webdriver, direction="FWD") -> None:
+    """
+    Click the next page button
+    :param driver: webdriver
+    :return: None
+    """
+    if direction == "FWD":
+        selector_button = (By.CLASS_NAME, 'ui-grid-pager-next')
+        button = driver.find_elements(*selector_button)[1]
+    else:
+        selector_button = (By.CLASS_NAME, 'ui-grid-pager-previous')
+        button = driver.find_elements(*selector_button)[1]
+
+    if "ui-state-disabled" not in button.get_attribute("class"):
+        print("Multiple pages of matches detected...")
+        wait_for_spinner(driver, 300)
+        try:
+            button.click()
+        except:
+            pass
+        # time.sleep(1000)
+        # sys.exit()
+
+
+def create_new_record(driver: webdriver) -> None:
+    """
+    Click the new record button
+    :param driver: webdriver
+    :return: None
+    """
+    button_new_record = driver.find_element(By.ID, "createBtn")
+    button_new_record.click()
+
+
+def skip_record(driver: webdriver) -> None:
+    """
+    Click the close GOAMTCH button
+    :param driver: webdriver
+    :return: None
+    """
+    button_close = driver.find_element(By.XPATH, '//a[@title="Close (Ctrl+Q)"]')
+    button_close.click()
+
+
+def handle_popup(driver: webdriver) -> None:
+    """
+    Handle the popup that appears when a new record is created or when a record is saved
+    :param driver: webdriver
+    :return: None
+    """
     window_popup = WebDriverWait(driver, 10).until(EC.visibility_of_element_located(
         (By.CLASS_NAME, "workspace-notifications-menu")))
-    button_popup = window_popup.find_element(By.XPATH, './/button')
-    wait_for_spinner(driver, 300)
-    button_popup.click()
+    try:
+        button_popup = window_popup.find_element(By.XPATH, './/button')
+        wait_for_spinner(driver, 300)
+        button_popup.click()
+    except:
+        time.sleep(0.5)
 
 
 def wait_for_spinner(driver: webdriver, timeout=300):
