@@ -8,6 +8,8 @@ from selenium import webdriver
 import time
 import sys
 
+from browsercontrol.goamtch_navigator import wait_for_spinner
+
 
 def wait_for_verifier_load(driver: webdriver, timeout=300):
     """
@@ -24,9 +26,7 @@ def wait_for_verifier_load(driver: webdriver, timeout=300):
         elements = dr.find_elements(By.CLASS_NAME, "workspace-title")
         return any("SRIPREL" in element.text for element in elements)
 
-    print("Waiting for verifier page to load...")
     WebDriverWait(driver, timeout).until(any_element_contains_text)
-    print("Verifier page loaded")
 
 
 def filter_again(driver: webdriver, timeout=300):
@@ -149,4 +149,6 @@ def select_and_nav(driver: webdriver, actions: ActionChains, elem: WebElement, t
     continue_btn.click()
     continue_btn = WebDriverWait(driver, timeout).until(
         EC.element_to_be_clickable((By.XPATH, '//*[@data-member="CHECK_BTN"]')))
+    wait_for_spinner(driver, 300)
     continue_btn.click()
+    wait_for_spinner(driver, 300)
