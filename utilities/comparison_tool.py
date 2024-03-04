@@ -22,8 +22,10 @@ def compare_prospects(prospect: dict[str, str], potential_matches: dict[str, dic
     for match in potential_matches:
         scores = _compare_dicts(normalized_prospect, potential_matches[match])
         if 100 in [scores['phone'], scores['email'], scores['address']]:
+            if scores['name'] < 80:  # skip if the name is not a close match
+                return 'skip'
             return match
-    return ''
+    return 'new person'
 
 
 def _compare_dicts(dict1: dict[str, str], dict2: dict[str, str]) -> dict[str, int]:
