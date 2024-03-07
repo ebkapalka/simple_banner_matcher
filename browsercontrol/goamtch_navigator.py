@@ -2,6 +2,7 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.common import StaleElementReferenceException
 from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.common.by import By
+from selenium.webdriver import ActionChains
 from selenium import webdriver
 import time
 
@@ -72,6 +73,7 @@ def get_potential_match_attributes(driver: webdriver) -> dict:
                 By.XPATH, './*').get_attribute("title")
             page_data[gid] = {
                 "name": cols[0].text,
+                "name_alt": cols[0].text,
                 "birthday": cols[1].text,
                 "address": '='.join(cols[2].text.split('=')[1:]),
                 "phone": '='.join(cols[3].text.split('=')[1:]),
@@ -95,7 +97,7 @@ def find_matched_element(driver, prospect_id):
     return None
 
 
-def select_by_match_id(driver: webdriver, prospect_id: str) -> None:
+def select_by_match_id(driver: webdriver, actions: ActionChains, prospect_id: str) -> None:
     """
     Select a row by the prospect id
     :param driver: webdriver
@@ -106,7 +108,10 @@ def select_by_match_id(driver: webdriver, prospect_id: str) -> None:
     if matched_elem:
         try:
             while matched_elem.get_attribute("aria-selected") != "true":
-                matched_elem.click()
+                try:
+                    matched_elem.click()
+                except:
+                    actions.move_to_element(matched_elem).perform()
                 time.sleep(.1)
                 wait_for_spinner(driver, 300)
         except StaleElementReferenceException:
