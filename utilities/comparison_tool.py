@@ -13,6 +13,7 @@ def compare_prospects(prospect: dict[str, str], potential_matches: dict[str, dic
     """
     normalized_prospect = {
             "name": f"{prospect["last name"]}, {prospect["first name"]} {prospect["middle name"]}".strip(),
+            "name_alt": f"{prospect["last name"]}, {prospect["first name"]}".strip(),
             "birthday": '/'.join([prospect['mm'], prospect['dd'], prospect['yyyy']]).strip().replace('//', ''),
             "address": f"{prospect['street 1']} {prospect['city']} {prospect['state']} {prospect['zipcode'][:5]}".strip(),
             "phone": PATTERN.sub('', f"{prospect['phone area']} {prospect['phone number']}"),  # this might need [-10:
@@ -22,7 +23,7 @@ def compare_prospects(prospect: dict[str, str], potential_matches: dict[str, dic
     for match in potential_matches:
         scores = _compare_dicts(normalized_prospect, potential_matches[match])
         if 100 in [scores['phone'], scores['email'], scores['address']]:
-            if scores['name'] < 80:  # skip if the name is not a close match
+            if scores['name'] < 80 and scores['name_alt'] < 80:  # skip if the name is not a close match
                 return 'skip'
             return match
     return 'new person'
