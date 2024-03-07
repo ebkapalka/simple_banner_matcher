@@ -4,12 +4,15 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.common.by import By
 from selenium import webdriver
 from pprint import pprint
+import atexit
 
-from browsercontrol.sriprel_navigator import (filter_again, get_prospect_ids,
-                                              select_by_prospect_id, select_and_nav)
 from browsercontrol.goamtch_navigator import (get_prospect_attributes,
-                                              get_potential_match_attributes, select_by_match_id, handle_popup,
+                                              get_potential_match_attributes,
+                                              select_by_match_id, handle_popup,
                                               create_new_record, skip_record)
+from browsercontrol.sriprel_navigator import (filter_again, get_prospect_ids,
+                                              select_by_prospect_id,
+                                              select_and_nav)
 from utilities.comparison_tool import compare_prospects
 
 
@@ -28,8 +31,8 @@ class BannerDriver:
             "match": 0,
         }
         self.await_login()
+        atexit.register(self.print_stats)
         self.main_loop()
-        pprint(self.stats)
 
     def await_login(self):
         """
@@ -88,6 +91,13 @@ class BannerDriver:
                 else:
                     print(f"Pg:{page_number} #{index:>02} - Selecting match {match_gid}")
                     self.stats["match"] += 1
-                    select_by_match_id(self.driver, match_gid)
+                    select_by_match_id(self.driver, self.actions, match_gid)
                 handle_popup(self.driver)
             page_number += 1
+
+    def print_stats(self):
+        """
+        Print the statistics of the BannerDriver
+        :return: None
+        """
+        pprint(self.stats)
