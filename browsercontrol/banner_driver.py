@@ -49,7 +49,7 @@ class BannerDriver:
         The main loop of the program
         :return: None
         """
-        page_number = 0
+        page_number = 1
         while True:
             filter_again(self.driver)
             batch_ids = get_prospect_ids(self.driver)
@@ -80,16 +80,16 @@ class BannerDriver:
                 match_gid = compare_prospects(prospect, matches)
 
                 if match_gid == "new person":
-                    print(f"Pg:{page_number} #{index:>02} - Creating new record")
+                    print(f"Pg:{page_number} #{index+1:>02} - Creating new record")
                     self.stats["new person"] += 1
                     create_new_record(self.driver)
                 elif match_gid == "skip":
-                    print(f"Pg:{page_number} #{index:>02} - Skipping record")
+                    print(f"Pg:{page_number} #{index+1:>02} - Skipping record")
                     self.stats["skip"] += 1
                     skip_record(self.driver)
                     continue
                 else:
-                    print(f"Pg:{page_number} #{index:>02} - Selecting match {match_gid}")
+                    print(f"Pg:{page_number} #{index+1:>02} - Selecting match {match_gid}")
                     self.stats["match"] += 1
                     select_by_match_id(self.driver, self.actions, match_gid)
                 handle_popup(self.driver)
