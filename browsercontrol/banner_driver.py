@@ -79,6 +79,7 @@ class BannerDriver:
                 matches = get_potential_match_attributes(self.driver)
                 match_gid = compare_prospects(prospect, matches)
 
+                # handle the match
                 if match_gid == "new person":
                     print(f"Pg:{page_number} #{index+1:>02} - Creating new record")
                     self.stats["new person"] += 1
