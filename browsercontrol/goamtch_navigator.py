@@ -6,6 +6,9 @@ from selenium.webdriver import ActionChains
 from selenium import webdriver
 import time
 
+# TODO: refactor the way multiple pages of matches are handled,
+#  so that the potential matches are checked before navigating
+#  to the next page of matches
 
 def get_prospect_attributes(driver: webdriver, timeout=300) -> dict[str, str]:
     """
