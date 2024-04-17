@@ -10,6 +10,7 @@ import time
 #  so that the potential matches are checked before navigating
 #  to the next page of matches
 
+
 def get_prospect_attributes(driver: webdriver, timeout=300) -> dict[str, str]:
     """
     Get the attributes of the prospect from the GOAMTCH page
