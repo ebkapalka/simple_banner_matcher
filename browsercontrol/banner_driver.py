@@ -21,7 +21,8 @@ class BannerDriver:
     This class is used to control the Banner web page.
     """
 
-    def __init__(self):
+    def __init__(self, env="prod"):
+        self.env = env
         self.driver = webdriver.Chrome()
         self.actions = ActionChains(self.driver)
         self.seen_prospects = set()
@@ -40,7 +41,7 @@ class BannerDriver:
         :return: None
         """
         print("Please log into Banner")
-        self.driver.get("https://prodbanner.montana.edu/applicationNavigator/seamless")
+        self.driver.get(f"https://{self.env}banner.montana.edu/applicationNavigator/seamless")
         WebDriverWait(self.driver, 300).until(EC.title_is("Application Navigator"))
         print("Banner Login Successful")
 
@@ -51,7 +52,7 @@ class BannerDriver:
         """
         page_number = 1
         while True:
-            filter_again(self.driver)
+            filter_again(self.driver, self.env)
             batch_ids = get_prospect_ids(self.driver)
             if not batch_ids:
                 print("No suspended records found")
