@@ -38,8 +38,14 @@ def _compare_dicts(dict1: dict[str, str], dict2: dict[str, str]) -> dict[str, in
     """
     scores = {}
     for key in dict1:
-        if dict1[key].strip() and dict2[key].strip():
-            scores[key] = fuzz.ratio(dict1[key], dict2[key])
+        if (dict1[key]
+                and dict2[key]
+                and dict1[key].strip()
+                and dict2[key].strip()):
+            scores[key] = fuzz.ratio(
+                dict1[key].strip().lower(),
+                dict2[key].strip().lower()
+            )
         else:
             scores[key] = 0
     return scores
