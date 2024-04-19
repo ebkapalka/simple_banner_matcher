@@ -28,14 +28,15 @@ def wait_for_verifier_load(driver: webdriver, timeout=300):
     WebDriverWait(driver, timeout).until(any_element_contains_text)
 
 
-def filter_again(driver: webdriver, timeout=300):
+def filter_again(driver: webdriver, env: str, timeout=300):
     """
     Set the configuration for the verifier page
     :param driver: webdriver
+    :param env: environment to use
     :param timeout: time to wait for the page to load
     :return: None
     """
-    driver.get("https://prodbanner.montana.edu/BannerAdmin?form=SRIPREL&vpdi_code="
+    driver.get(f"https://{env}banner.montana.edu/BannerAdmin?form=SRIPREL&vpdi_code="
                "BZ&appnav_vpdi_code=BZ&ban_args=&ban_mode=xe")
     wait_for_verifier_load(driver)
     selector_filter_elements = (By.CLASS_NAME, 'middleDivRow')
