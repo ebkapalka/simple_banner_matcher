@@ -62,7 +62,7 @@ class BannerDriver:
             prev_batch_ids = batch_ids.copy()
             while set(batch_ids).issubset(self.seen_prospects):
                 button_next = self.driver.find_element(By.XPATH, '//span[@aria-label="Next Page"]')
-                button_next.click()
+                button_next.click()  # TODO: this is preventing graceful exit
                 batch_ids = get_prospect_ids(self.driver)
                 if batch_ids == prev_batch_ids:
                     print("No new records found")
