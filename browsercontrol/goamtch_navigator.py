@@ -83,9 +83,9 @@ def get_potential_match_attributes(driver: webdriver) -> dict:
                     name: (cols[0].querySelector('input') || cols[0].querySelector('div')).title,
                     name_alt: (cols[0].querySelector('input') || cols[0].querySelector('div')).title,
                     birthday: (cols[1].querySelector('input') || cols[1].querySelector('div')).title,
-                    address: (cols[2].querySelector('input') || cols[2].querySelector('div')).title.split('=')[1],
+                    address: (cols[2].querySelector('input') || cols[2].querySelector('div')).title.split('=')[1].split(' ').slice(0, -1).join(' '),
                     phone: (cols[3].querySelector('input') || cols[3].querySelector('div')).title.split('=')[1],
-                    email: (cols[4].querySelector('input') || cols[4].querySelector('div')).title.toLowerCase(),
+                    email: (cols[4].querySelector('input') || cols[4].querySelector('div')).title.toLowerCase().split('=')[1],
                     gid: (cols[5].querySelector('input') || cols[5].querySelector('div')).title,
                     gender: (cols[6].querySelector('input') || cols[6].querySelector('div')).title
                 };
