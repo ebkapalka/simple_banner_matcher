@@ -80,13 +80,14 @@ def get_prospect_ids(driver: webdriver, timeout=10) -> list[str]:
         """
         elems = dr.find_elements(By.XPATH, '//div[@onmousedown="Frames.'
                                            'DataGrid.selection(this);"]')
-        if len(elems) < 2:
+        if len(elems) < 1:
             return False
         return elems
 
     prospect_ids = []
     wait_for_verifier_load(driver)
     try:
+        WebDriverWait(driver, timeout).until(await_multiple_elems)
         rows = WebDriverWait(driver, timeout).until(await_multiple_elems)
         for row in rows:
             try:
