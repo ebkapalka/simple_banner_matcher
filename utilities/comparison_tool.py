@@ -15,7 +15,7 @@ def compare_prospects(prospect: dict[str, str], potential_matches: dict[str, dic
             "name": f"{prospect["last name"]}, {prospect["first name"]} {prospect["middle name"]}".strip(),
             "name_alt": f"{prospect["last name"]}, {prospect["first name"]}".strip(),
             "birthday": '/'.join([prospect['mm'], prospect['dd'], prospect['yyyy']]).strip().replace('//', ''),
-            "address": f"{prospect['street 1']} {prospect['city']} {prospect['state']} {prospect['zipcode'][:5]}".strip(),
+            "address": f"{prospect['street 1']} {prospect['city']} {prospect['state']}".strip(),
             "phone": PATTERN.sub('', f"{prospect['phone area']} {prospect['phone number']}"),  # this might need [-10:
             "email": prospect['email'].strip(),
             "gender": '',
