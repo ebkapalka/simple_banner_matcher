@@ -17,6 +17,7 @@ def wait_for_verifier_load(driver: webdriver, timeout=300):
     :param timeout: time to wait for the page to load
     :return: None
     """
+
     def any_element_contains_text(dr: webdriver) -> bool:
         """
         Check if any of the elements contain the text "SRIPREL"
@@ -65,41 +66,38 @@ def filter_again(driver: webdriver, env: str, timeout=300):
             break
 
 
-def get_prospect_ids(driver: webdriver, timeout=10) -> list[str]:
+def get_prospect_ids(driver: webdriver, timeout=5) -> list[str]:
     """
     Fetch the rows from the verifier page
     :param driver: webdriver
     :param timeout: time to wait for the page to load
     :return: list of WebElements
     """
-    def await_multiple_elems(dr: webdriver):
-        """
-        Used to check for multiple matching elements
-        :param dr: webdriver
-        :return:
-        """
-        elems = dr.find_elements(By.XPATH, '//div[@onmousedown="Frames.'
-                                           'DataGrid.selection(this);"]')
-        if len(elems) < 1:
-            return False
-        return elems
-
     prospect_ids = []
     wait_for_verifier_load(driver)
+
+    # try to get the rows
+    rows_xpath = '//div[@onmousedown="Frames.DataGrid.selection(this);"]'
     try:
-        WebDriverWait(driver, timeout).until(await_multiple_elems)
-        rows = WebDriverWait(driver, timeout).until(await_multiple_elems)
-        for row in rows:
-            try:
-                child_div = row.find_element(By.XPATH, ".//div[1]/div[1]")
-            except:
-                child_div = row.find_element(By.XPATH, ".//div[1]/input[1]")
-            prospect_id = child_div.text
-            prospect_ids.append(prospect_id)
+        rows = WebDriverWait(driver, timeout).until(
+            lambda dr: dr.find_elements(By.XPATH, rows_xpath)
+            if len(dr.find_elements(By.XPATH, rows_xpath)) >= 2
+            else False
+        )
     except TimeoutException:
-        pass
-    except Exception as e:
-        print(f"Error in get_prospect_ids: {e}")
+        rows = []
+    if len(rows) <= 1:
+        rows = driver.find_elements(By.XPATH, rows_xpath)
+
+    # get the prospect ids
+    for row in rows:
+        try:
+            child_div = row.find_element(By.XPATH, ".//div[1]/div[1]")
+            prospect_id = child_div.text
+        except NoSuchElementException:
+            child_div = row.find_element(By.XPATH, ".//div[1]/input[1]")
+            prospect_id = child_div.get_attribute("value")
+        prospect_ids.append(prospect_id)
     return prospect_ids
 
 
@@ -116,11 +114,14 @@ def select_by_prospect_id(driver: webdriver, prospect_id: str) -> WebElement | N
     for elem in elems:
         try:
             child_div = elem.find_element(By.XPATH, ".//div[1]/div[1]")
+            elem_id = child_div.text
         except:
             child_div = elem.find_element(By.XPATH, ".//div[1]/input[1]")
-        elem_id = child_div.text
+            elem_id = child_div.get_attribute("value")
         if elem_id == prospect_id:
             return elem
+    print(f"Could not find prospect id {prospect_id}")
+    time.sleep(500_000)
     return None
 
 
@@ -141,9 +142,12 @@ def select_and_nav(driver: webdriver, actions: ActionChains, elem: WebElement, t
             return False
         return True
 
-    while elem.get_attribute("aria-selected") != "true":
-        time.sleep(.1)
-        elem.click()
+    try:
+        while elem.get_attribute("aria-selected") != "true":
+            time.sleep(.1)
+            elem.click()
+    except:
+        pass
 
     WebDriverWait(driver, timeout).until(await_menu_related)
     driver.find_element("xpath", '//*[@data-action="GOTO_MATCH"]').click()
