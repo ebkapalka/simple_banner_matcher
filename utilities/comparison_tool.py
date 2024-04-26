@@ -1,4 +1,5 @@
 from fuzzywuzzy import fuzz
+import time
 import re
 
 PATTERN = re.compile(r'\D')
@@ -12,16 +13,19 @@ def compare_prospects(prospect: dict[str, str], potential_matches: dict[str, dic
     :return:
     """
     normalized_prospect = {
-            "name": f"{prospect["last name"]}, {prospect["first name"]} {prospect["middle name"]}".strip(),
-            "name_alt": f"{prospect["last name"]}, {prospect["first name"]}".strip(),
-            "birthday": '/'.join([prospect['mm'], prospect['dd'], prospect['yyyy']]).strip().replace('//', ''),
-            "address": f"{prospect['street 1']} {prospect['city']} {prospect['state']}".strip(),
-            "phone": PATTERN.sub('', f"{prospect['phone area']} {prospect['phone number']}"),  # this might need [-10:
-            "email": prospect['email'].strip(),
-            "gender": '',
+        "name": f"{prospect["last name"]}, {prospect["first name"]} {prospect["middle name"]}",
+        "name_alt": f"{prospect["last name"]}, {prospect["first name"]}",
+        "birthday": '/'.join([prospect['mm'], prospect['dd'], prospect['yyyy']]).replace('//', ''),
+        "address": f"{prospect['street 1']} {prospect['city']} {prospect['state']}",
+        "phone": PATTERN.sub('', f"{prospect['phone area']} {prospect['phone number']}"),  # this might need [-10:
+        "email": prospect['email'],
+        "gender": '',
     }
     for match in potential_matches:
+        print(normalized_prospect)
+        print(potential_matches[match])
         scores = _compare_dicts(normalized_prospect, potential_matches[match])
+        print(scores, end='\n\n'); time.sleep(30)
         if 100 in [scores['phone'], scores['email'], scores['address']]:
             if scores['name'] < 80 and scores['name_alt'] < 80:  # skip if the name is not a close match
                 return 'skip'
