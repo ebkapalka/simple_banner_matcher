@@ -5,12 +5,13 @@ import re
 PATTERN = re.compile(r'\D')
 
 
-def compare_prospects(prospect: dict[str, str], potential_matches: dict[str, dict]) -> str:
+def compare_prospects(prospect: dict[str, str], potential_matches: dict[str, dict], verbose=False) -> str:
     """
     Compare the prospect to the potential matches
     :param prospect: prospect attributes in a dictionary
     :param potential_matches: dictionary of potential matches
-    :return:
+    :param verbose: print the comparison results and delay
+    :return: string of the match gid
     """
     normalized_prospect = {
         "name": f"{prospect["last name"]}, {prospect["first name"]} {prospect["middle name"]}",
@@ -22,10 +23,11 @@ def compare_prospects(prospect: dict[str, str], potential_matches: dict[str, dic
         "gender": '',
     }
     for match in potential_matches:
-        print(normalized_prospect)
-        print(potential_matches[match])
         scores = _compare_dicts(normalized_prospect, potential_matches[match])
-        print(scores, end='\n\n'); time.sleep(30)
+        if verbose:
+            print(normalized_prospect)
+            print(potential_matches[match])
+            print(scores, end='\n\n')
         if 100 in [scores['phone'], scores['email'], scores['address']]:
             if scores['name'] < 80 and scores['name_alt'] < 80:  # skip if the name is not a close match
                 return 'skip'
