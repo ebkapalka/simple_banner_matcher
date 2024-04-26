@@ -72,6 +72,28 @@ def get_potential_match_attributes(driver: webdriver) -> dict:
     num_pages = driver.find_elements(By.CLASS_NAME, 'ui-total-pages')[1].text
     for page in range(int(num_pages)):
         # Extract data from rows
+        # rows_data = driver.execute_script(
+        #     """
+        #     var rows = [];
+        #     var container = document.getElementById('grdGovcmid');
+        #     var matchRows = container.querySelectorAll('div[onmousedown="Frames.DataGrid.selection(this);"]');
+        #     matchRows.forEach(row => {
+        #         var cols = row.children;
+        #         var data = {
+        #             name: (cols[0].querySelector('input') || cols[0].querySelector('div')).title,
+        #             name_alt: (cols[0].querySelector('input') || cols[0].querySelector('div')).title,
+        #             birthday: (cols[1].querySelector('input') || cols[1].querySelector('div')).title,
+        #             address: (cols[2].querySelector('input') || cols[2].querySelector('div')).title.split('=')[1].split(' ').slice(0, -1).join(' '),
+        #             phone: (cols[3].querySelector('input') || cols[3].querySelector('div')).title.split('=')[1],
+        #             email: (cols[4].querySelector('input') || cols[4].querySelector('div')).title.toLowerCase().split('=')[1],
+        #             gid: (cols[5].querySelector('input') || cols[5].querySelector('div')).title,
+        #             gender: (cols[6].querySelector('input') || cols[6].querySelector('div')).title
+        #         };
+        #         rows.push(data);
+        #     });
+        #     return rows;
+        #     """
+        # )
         rows_data = driver.execute_script(
             """
             var rows = [];
@@ -79,26 +101,50 @@ def get_potential_match_attributes(driver: webdriver) -> dict:
             var matchRows = container.querySelectorAll('div[onmousedown="Frames.DataGrid.selection(this);"]');
             matchRows.forEach(row => {
                 var cols = row.children;
-                var data = {
-                    name: (cols[0].querySelector('input') || cols[0].querySelector('div')).title,
-                    name_alt: (cols[0].querySelector('input') || cols[0].querySelector('div')).title,
-                    birthday: (cols[1].querySelector('input') || cols[1].querySelector('div')).title,
-                    address: (cols[2].querySelector('input') || cols[2].querySelector('div')).title.split('=')[1].split(' ').slice(0, -1).join(' '),
-                    phone: (cols[3].querySelector('input') || cols[3].querySelector('div')).title.split('=')[1],
-                    email: (cols[4].querySelector('input') || cols[4].querySelector('div')).title.toLowerCase().split('=')[1],
-                    gid: (cols[5].querySelector('input') || cols[5].querySelector('div')).title,
-                    gender: (cols[6].querySelector('input') || cols[6].querySelector('div')).title
-                };
+                var data = {};
+                
+                data.name = (cols[0].querySelector('input') || cols[0].querySelector('div')).title;
+                data.name_alt = data.name;
+                data.birthday = (cols[1].querySelector('input') || cols[1].querySelector('div')).title;
+        
+                var addressTitle = (cols[2].querySelector('input') || cols[2].querySelector('div')).title;
+                if (addressTitle.includes('=')) {
+                    var parts = addressTitle.split('=');
+                    if (parts.length > 1) {
+                        data.address = parts[1].split(' ').slice(0, -1).join(' ');
+                    } else {
+                        data.address = ''; // or some default value
+                    }
+                } else {
+                    data.address = '';
+                }
+        
+                var phoneTitle = (cols[3].querySelector('input') || cols[3].querySelector('div')).title;
+                if (phoneTitle.includes('=')) {
+                    data.phone = phoneTitle.split('=')[1];
+                } else {
+                    data.phone = '';
+                }
+        
+                var emailTitle = (cols[4].querySelector('input') || cols[4].querySelector('div')).title.toLowerCase();
+                if (emailTitle.includes('=')) {
+                    data.email = emailTitle.split('=')[1];
+                } else {
+                    data.email = '';
+                }
+        
+                data.gid = (cols[5].querySelector('input') || cols[5].querySelector('div')).title;
+                data.gender = (cols[6].querySelector('input') || cols[6].querySelector('div')).title;
+        
                 rows.push(data);
             });
             return rows;
             """
         )
+
         page_data = {row['gid']: row for row in rows_data}
         all_data.update(page_data)
         next_page(driver, direction="FWD")
-    pprint(all_data)
-    time.sleep(120)
     return all_data
 
 
