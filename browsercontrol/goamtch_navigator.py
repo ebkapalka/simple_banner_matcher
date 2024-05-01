@@ -71,29 +71,6 @@ def get_potential_match_attributes(driver: webdriver) -> dict:
     all_data = {}
     num_pages = driver.find_elements(By.CLASS_NAME, 'ui-total-pages')[1].text
     for page in range(int(num_pages)):
-        # Extract data from rows
-        # rows_data = driver.execute_script(
-        #     """
-        #     var rows = [];
-        #     var container = document.getElementById('grdGovcmid');
-        #     var matchRows = container.querySelectorAll('div[onmousedown="Frames.DataGrid.selection(this);"]');
-        #     matchRows.forEach(row => {
-        #         var cols = row.children;
-        #         var data = {
-        #             name: (cols[0].querySelector('input') || cols[0].querySelector('div')).title,
-        #             name_alt: (cols[0].querySelector('input') || cols[0].querySelector('div')).title,
-        #             birthday: (cols[1].querySelector('input') || cols[1].querySelector('div')).title,
-        #             address: (cols[2].querySelector('input') || cols[2].querySelector('div')).title.split('=')[1].split(' ').slice(0, -1).join(' '),
-        #             phone: (cols[3].querySelector('input') || cols[3].querySelector('div')).title.split('=')[1],
-        #             email: (cols[4].querySelector('input') || cols[4].querySelector('div')).title.toLowerCase().split('=')[1],
-        #             gid: (cols[5].querySelector('input') || cols[5].querySelector('div')).title,
-        #             gender: (cols[6].querySelector('input') || cols[6].querySelector('div')).title
-        #         };
-        #         rows.push(data);
-        #     });
-        #     return rows;
-        #     """
-        # )
         rows_data = driver.execute_script(
             """
             var rows = [];
@@ -156,7 +133,8 @@ def find_matched_element(driver: webdriver, prospect_id: str) -> WebElement | No
     :return: web element
     """
     match_container = driver.find_element(By.ID, "grdGovcmid")
-    match_rows = match_container.find_elements(By.XPATH, './/div[@onmousedown="Frames.DataGrid.selection(this);"]')
+    match_rows = match_container.find_elements(
+        By.XPATH, './/div[@onmousedown="Frames.DataGrid.selection(this);"]')
     for row in match_rows:
         cols = row.find_elements(By.XPATH, './div')
         gid = cols[5].find_element(By.XPATH, './*').get_attribute("title")
@@ -176,15 +154,25 @@ def select_by_match_id(driver: webdriver, actions: ActionChains, prospect_id: st
     matched_elem = find_matched_element(driver, prospect_id)
     if matched_elem:
         try:
+            try_count = 0
             while matched_elem.get_attribute("aria-selected") != "true":
                 try:
                     matched_elem.click()
                 except:
-                    actions.move_to_element(matched_elem).perform()
+                    if try_count < 10:
+                        # normal attempt to scroll to the element
+                        actions.move_to_element(matched_elem).perform()
+                    else:
+                        # use JavaScript to scroll to the element
+                        # TODO: test to see if this even works
+                        driver.execute_script("arguments[0].click();", matched_elem)
+                    try_count += 1
+                    print("    Tries:", try_count)
                 time.sleep(.1)
                 wait_for_spinner(driver, 300)
         except StaleElementReferenceException:
             matched_elem = find_matched_element(driver, prospect_id)  # Refetch the element
+            actions.move_to_element(matched_elem).perform()
             if matched_elem:
                 matched_elem.click()
                 wait_for_spinner(driver, 300)
