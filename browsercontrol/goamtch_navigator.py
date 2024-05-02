@@ -5,7 +5,6 @@ from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.common.by import By
 from selenium.webdriver import ActionChains
 from selenium import webdriver
-from pprint import pprint
 import time
 
 
@@ -177,8 +176,6 @@ def select_by_match_id(driver: webdriver, actions: ActionChains, prospect_id: st
                 matched_elem.click()
                 wait_for_spinner(driver, 300)
         wait_for_spinner(driver, 300)
-        button_select = driver.find_element(By.ID, 'selectBtn')
-        button_select.click()
     else:
         print("No match found")
 
@@ -230,6 +227,16 @@ def skip_record(driver: webdriver) -> None:
     """
     button_close = driver.find_element(By.XPATH, '//a[@title="Close (Ctrl+Q)"]')
     button_close.click()
+
+
+def select_matched_record(driver: webdriver) -> None:
+    """
+    Click the select button
+    :param driver: webdriver
+    :return: None
+    """
+    button_select = driver.find_element(By.ID, 'selectBtn')
+    button_select.click()
 
 
 def handle_popup(driver: webdriver) -> None:
