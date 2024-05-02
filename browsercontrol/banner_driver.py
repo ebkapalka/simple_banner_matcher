@@ -9,7 +9,8 @@ import atexit
 from browsercontrol.goamtch_navigator import (get_prospect_attributes,
                                               get_potential_match_attributes,
                                               select_by_match_id, handle_popup,
-                                              create_new_record, skip_record)
+                                              create_new_record, skip_record,
+                                              select_matched_record)
 from browsercontrol.sriprel_navigator import (filter_again, get_prospect_ids,
                                               select_by_prospect_id,
                                               select_and_nav)
@@ -94,6 +95,7 @@ class BannerDriver:
                     print(f"Pg:{page_number} #{index+1:>02} - Selecting match {match_gid}")
                     self.stats["match"] += 1
                     select_by_match_id(self.driver, self.actions, match_gid)
+                    select_matched_record(self.driver)
                 handle_popup(self.driver)
             page_number += 1
 
