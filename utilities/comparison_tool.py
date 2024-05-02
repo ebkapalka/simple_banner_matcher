@@ -1,5 +1,5 @@
 from fuzzywuzzy import fuzz
-import time
+import copy
 import re
 
 PATTERN = re.compile(r'\D')
@@ -23,10 +23,12 @@ def compare_prospects(prospect: dict[str, str], potential_matches: dict[str, dic
         "gender": '',
     }
     for match in potential_matches:
-        scores = _compare_dicts(normalized_prospect, potential_matches[match])
+        temp_match = copy.deepcopy(potential_matches[match])
+        temp_match["phone"] = PATTERN.sub('', temp_match["phone"])  # this might need [-10:
+        scores = _compare_dicts(normalized_prospect, temp_match)
         if verbose:
-            print(normalized_prospect)
-            print(potential_matches[match])
+            print(f"Prospect: {dict(sorted(normalized_prospect.items()))}")
+            print(f"Potential Match: {dict(sorted(temp_match.items()))}")
             print(scores, end='\n\n')
         if 100 in [scores['phone'], scores['email'], scores['address']]:
             if scores['name'] < 80 and scores['name_alt'] < 80:  # skip if the name is not a close match
