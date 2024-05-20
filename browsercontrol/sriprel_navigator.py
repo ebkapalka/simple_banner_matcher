@@ -1,8 +1,8 @@
-from selenium.webdriver import ActionChains, Keys
+from selenium.common import NoSuchElementException, TimeoutException
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.remote.webelement import WebElement
 from selenium.webdriver.support.ui import WebDriverWait
-from selenium.common import NoSuchElementException, TimeoutException
+from selenium.webdriver import ActionChains, Keys
 from selenium.webdriver.common.by import By
 from selenium import webdriver
 import time
@@ -37,8 +37,7 @@ def filter_again(driver: webdriver, env: str, timeout=300):
     :param timeout: time to wait for the page to load
     :return: None
     """
-    driver.get(f"https://{env}banner.montana.edu/BannerAdmin?form=SRIPREL&vpdi_code="
-               "BZ&appnav_vpdi_code=BZ&ban_args=&ban_mode=xe")
+    driver.get(f"https://{env}banner.montana.edu/BannerAdmin?form=SRIPREL")
     wait_for_verifier_load(driver)
     selector_filter_elements = (By.CLASS_NAME, 'middleDivRow')
     selector_text_input = (By.XPATH, ".//input")
