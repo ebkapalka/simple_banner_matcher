@@ -6,14 +6,21 @@ from selenium import webdriver
 from pprint import pprint
 import atexit
 
-from browsercontrol.goamtch_navigator import (get_prospect_attributes,
-                                              get_potential_match_attributes,
-                                              select_by_match_id, handle_popup)
-from browsercontrol.goamtch_navigator import (create_new_record, skip_record,
-                                              select_matched_record)
-from browsercontrol.sriprel_navigator import (filter_again, get_prospect_ids,
-                                              select_by_prospect_id,
-                                              select_and_nav)
+from browsercontrol.goamtch_navigator import (
+    get_potential_match_attributes,
+    get_prospect_attributes,
+    select_matched_record,
+    select_by_match_id,
+    create_new_record,
+    handle_popup,
+    skip_record
+)
+from browsercontrol.sriprel_navigator import (
+    select_by_prospect_id,
+    get_prospect_ids,
+    select_and_nav,
+    filter_again
+)
 from utilities.comparison_tool import compare_prospects
 
 
