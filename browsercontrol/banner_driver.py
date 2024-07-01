@@ -31,7 +31,19 @@ class BannerDriver:
 
     def __init__(self, env="prod"):
         self.env = env
-        self.driver = webdriver.Chrome()
+        self.options = webdriver.ChromeOptions()
+        prefs = {
+            'profile.default_content_setting_values.automatic_downloads': 1,
+            'profile.password_manager_enabled': False,
+            'credentials_enable_service': False,
+            'autofill.profile_enabled': False,
+        }
+        self.options.add_experimental_option('prefs', prefs)
+        self.options.add_argument("--disable-save-password-bubble")
+        self.options.add_argument("--disable-autofill-keyboard-accessory-view")
+        self.options.add_argument("--disable-prompt-on-repost")
+        self.options.add_argument("--disable-autofill")
+        self.driver = webdriver.Chrome(options=self.options)
         self.actions = ActionChains(self.driver)
         self.seen_prospects = set()
         self.stats = {
